@@ -9,6 +9,11 @@ import numpy as np
 from basketball_analyzer.config import AnalyzerConfig
 from basketball_analyzer.video.processor import Frame
 
+try:
+    from ultralytics import YOLO  # type: ignore
+except ImportError:  # allows import without ultralytics installed (e.g. unit tests)
+    YOLO = None  # type: ignore
+
 
 @dataclass
 class BoundingBox:
@@ -80,8 +85,8 @@ class TrackFrame:
 class PlayerTracker:
     def __init__(self, config: AnalyzerConfig) -> None:
         self.config = config
-        # Lazy-load YOLO so tests can mock it
-        from ultralytics import YOLO  # type: ignore
+        if YOLO is None:
+            raise ImportError("ultralytics is required: pip install ultralytics")
         self.model = YOLO(config.model_name)
         self._ball_trajectory = BallTrajectory()
         # track_id → list of (nx, ny, timestamp)
