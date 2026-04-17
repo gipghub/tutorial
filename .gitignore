@@ -1,0 +1,17 @@
+output/
+*.pt
+__pycache__/
+.env
+.venv/
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+*.pyc
+*.pyo
+*.mp4
+*.mov
+*.mp3
+client_secrets.json
+~/.basketball-analyzer/

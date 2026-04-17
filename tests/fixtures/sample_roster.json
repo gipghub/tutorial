@@ -1,0 +1,12 @@
+{
+  "teams": [
+    {"name": "Home", "short_name": "HME", "color_primary": "#1a3a6b", "color_secondary": "#ffffff"},
+    {"name": "Away", "short_name": "AWY", "color_primary": "#8b0000", "color_secondary": "#ffffff"}
+  ],
+  "players": [
+    {"number": 5,  "name": "Alice Smith",  "position": "PG", "age": 16, "team": "Home"},
+    {"number": 23, "name": "Bob Jones",    "position": "SF", "age": 17, "team": "Home"},
+    {"number": 3,  "name": "Carol Davis",  "position": "SG", "age": 16, "team": "Away"},
+    {"number": 10, "name": "Dave Wilson",  "position": "PF", "age": 18, "team": "Away"}
+  ]
+}

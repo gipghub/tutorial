@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }} — Processing{% endblock %}
+{% block content %}
+<div class="row justify-content-center text-center">
+  <div class="col-md-8">
+    <h2 class="mb-3" style="color:#e94560;">⚙️ Analyzing Your Game</h2>
+    <p class="text-secondary mb-4">This may take a few minutes depending on video length.</p>
+
+    <div class="card p-4 mb-4">
+      <div class="spinner-border text-danger mb-3" style="width:3rem;height:3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mb-1" id="statusText">Initializing...</p>
+      <div class="progress mt-3" style="height:8px;">
+        <div class="progress-bar bg-danger" id="progressBar" style="width:0%;transition:width 0.5s;"></div>
+      </div>
+    </div>
+
+    <p class="text-secondary">Scanning for players, tracking the ball, detecting shots and highlights...</p>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const jobId = {{ job_id | tojson }};
+const labels = {
+  'queued': 'Queued — waiting to start...',
+  'running': 'Detecting players and ball...',
+  'analyzing': 'Analyzing frames...',
+  'highlights_done': 'Generating commentary and voice-over...',
+  'done': 'Done! Redirecting...',
+  'error': 'Error during processing',
+};
+
+async function poll() {
+  try {
+    const resp = await fetch(`/status/${jobId}`);
+    const data = await resp.json();
+    const label = labels[data.status] || data.status;
+    document.getElementById('statusText').textContent = label;
+    const pct = data.total > 0 ? Math.round((data.progress / data.total) * 100) : 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+
+    if (data.status === 'done') {
+      window.location.href = `/results/${jobId}`;
+    } else if (data.status === 'error') {
+      document.getElementById('statusText').textContent = '❌ Error: ' + (data.error || 'Unknown');
+    } else {
+      setTimeout(poll, 2000);
+    }
+  } catch {
+    setTimeout(poll, 3000);
+  }
+}
+poll();
+</script>
+{% endblock %}
