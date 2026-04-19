@@ -278,12 +278,12 @@ index_content = '''\
     <div class="card p-4 mb-4">
       <ul class="nav nav-tabs mb-3" id="inputTabs">
         <li class="nav-item">
-          <button class="nav-link active" id="localTab" type="button" onclick="switchTab('local')">
+          <button class="nav-link active" id="localTab" type="button" onclick="switchTab(\'local\')">
             📂 Use Local File Path <span class="badge bg-success ms-1">Recommended</span>
           </button>
         </li>
         <li class="nav-item">
-          <button class="nav-link" id="uploadTab" type="button" onclick="switchTab('upload')">
+          <button class="nav-link" id="uploadTab" type="button" onclick="switchTab(\'upload\')">
             ⬆ Upload File
           </button>
         </li>
@@ -295,13 +295,13 @@ index_content = '''\
           <div class="mb-3">
             <label class="form-label fw-bold">Video File Path <span class="text-danger">*</span></label>
             <input type="text" class="form-control" name="local_video_path" id="localVideoPath"
-              placeholder="C:\Videos\game.mp4">
+              placeholder="C:\\Videos\\game.mp4">
             <div class="form-text text-secondary">Paste the full path to your video — no upload needed, works with large files</div>
           </div>
           <div class="mb-3">
             <label class="form-label fw-bold">Roster File Path <span class="text-secondary">(optional)</span></label>
             <input type="text" class="form-control" name="local_roster_path"
-              placeholder="C:\Videos\roster.json">
+              placeholder="C:\\Videos\\roster.json">
           </div>
         </div>
 
@@ -356,51 +356,51 @@ index_content = '''\
 {% endblock %}
 {% block scripts %}
 <script>
-let activeTab = 'local';
+let activeTab = \'local\';
 
 function switchTab(tab) {
   activeTab = tab;
-  document.getElementById('localPanel').style.display  = tab === 'local'  ? '' : 'none';
-  document.getElementById('uploadPanel').style.display = tab === 'upload' ? '' : 'none';
-  document.getElementById('localTab').classList.toggle('active',  tab === 'local');
-  document.getElementById('uploadTab').classList.toggle('active', tab === 'upload');
-  document.getElementById('localVideoPath').required  = (tab === 'local');
+  document.getElementById(\'localPanel\').style.display  = tab === \'local\'  ? \'\' : \'none\';
+  document.getElementById(\'uploadPanel\').style.display = tab === \'upload\' ? \'\' : \'none\';
+  document.getElementById(\'localTab\').classList.toggle(\'active\',  tab === \'local\');
+  document.getElementById(\'uploadTab\').classList.toggle(\'active\', tab === \'upload\');
+  document.getElementById(\'localVideoPath\').required  = (tab === \'local\');
 }
 
-document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+document.getElementById(\'uploadForm\').addEventListener(\'submit\', async (e) => {
   e.preventDefault();
-  const btn = document.getElementById('submitBtn');
-  btn.textContent = activeTab === 'local' ? '⏳ Starting...' : '⏳ Uploading...';
+  const btn = document.getElementById(\'submitBtn\');
+  btn.textContent = activeTab === \'local\' ? \'⏳ Starting...\' : \'⏳ Uploading...\';
   btn.disabled = true;
 
   const formData = new FormData(e.target);
-  if (activeTab === 'upload') {
-    formData.set('local_video_path', '');
-    formData.set('local_roster_path', '');
+  if (activeTab === \'upload\') {
+    formData.set(\'local_video_path\', \'\');
+    formData.set(\'local_roster_path\', \'\');
   }
   try {
-    const resp = await fetch('/upload', { method: 'POST', body: formData });
+    const resp = await fetch(\'/upload\', { method: \'POST\', body: formData });
     const text = await resp.text();
     let data;
     try {
       data = JSON.parse(text);
     } catch {
-      const firstLine = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
-      alert('Server error:\n' + firstLine);
-      btn.textContent = '🚀 Analyze Game';
+      const firstLine = text.replace(/<[^>]+>/g, \' \').replace(/\\s+/g, \' \').trim().slice(0, 300);
+      alert(\'Server error:\\n\' + firstLine);
+      btn.textContent = \'🚀 Analyze Game\';
       btn.disabled = false;
       return;
     }
     if (data.job_id) {
       window.location.href = `/results/${data.job_id}`;
     } else {
-      alert('Error: ' + (data.error || 'Unknown error') + (data.detail ? '\n\n' + data.detail.slice(0, 500) : ''));
-      btn.textContent = '🚀 Analyze Game';
+      alert(\'Error: \' + (data.error || \'Unknown error\') + (data.detail ? \'\\n\\n\' + data.detail.slice(0, 500) : \'\'));
+      btn.textContent = \'🚀 Analyze Game\';
       btn.disabled = false;
     }
   } catch (err) {
-    alert('Failed: ' + err.message);
-    btn.textContent = '🚀 Analyze Game';
+    alert(\'Failed: \' + err.message);
+    btn.textContent = \'🚀 Analyze Game\';
     btn.disabled = false;
   }
 });
