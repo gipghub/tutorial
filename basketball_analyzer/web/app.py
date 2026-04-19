@@ -24,7 +24,7 @@ from basketball_analyzer.sharing.email_sender import EmailSender
 from basketball_analyzer.sharing.share_link import generate_qr, generate_share_url
 
 UPLOAD_FOLDER = Path("uploads")
-JOBS: dict[str, dict] = {}  # job_id → {status, config, result, error}
+JOBS: dict[str, dict] = {}  # job_id -> {status, config, result, error}
 ALLOWED_VIDEO = {".mp4", ".mov", ".avi", ".mkv"}
 ALLOWED_ROSTER = {".json", ".csv"}
 
@@ -41,49 +41,62 @@ def create_app(config: AnalyzerConfig | None = None) -> Flask:
 
     @app.route("/upload", methods=["POST"])
     def upload():
-        video = request.files.get("video")
-        roster = request.files.get("roster")
-        if not video or not video.filename:
-            return jsonify({"error": "No video file provided"}), 400
+        try:
+            job_id = str(uuid.uuid4())
+            job_dir = UPLOAD_FOLDER / job_id
+            job_dir.mkdir()
 
-        ext = Path(video.filename).suffix.lower()
-        if ext not in ALLOWED_VIDEO:
-            return jsonify({"error": f"Unsupported video format: {ext}"}), 400
+            roster_path: Path | None = None
 
-        job_id = str(uuid.uuid4())
-        job_dir = UPLOAD_FOLDER / job_id
-        job_dir.mkdir()
+            local_video = request.form.get("local_video_path", "").strip()
+            if local_video:
+                video_path = Path(local_video)
+                if not video_path.exists():
+                    return jsonify({"error": f"File not found: {local_video}"}), 400
+                if video_path.suffix.lower() not in ALLOWED_VIDEO:
+                    return jsonify({"error": f"Unsupported format: {video_path.suffix}"}), 400
+                local_roster = request.form.get("local_roster_path", "").strip()
+                if local_roster and Path(local_roster).exists():
+                    roster_path = Path(local_roster)
+            else:
+                video = request.files.get("video")
+                roster = request.files.get("roster")
+                if not video or not video.filename:
+                    return jsonify({"error": "No video file provided"}), 400
+                ext = Path(video.filename).suffix.lower()
+                if ext not in ALLOWED_VIDEO:
+                    return jsonify({"error": f"Unsupported video format: {ext}"}), 400
+                video_path = job_dir / secure_filename(video.filename)
+                video.save(str(video_path))
+                if roster and roster.filename:
+                    r_ext = Path(roster.filename).suffix.lower()
+                    if r_ext in ALLOWED_ROSTER:
+                        roster_path = job_dir / secure_filename(roster.filename)
+                        roster.save(str(roster_path))
 
-        video_path = job_dir / secure_filename(video.filename)
-        video.save(str(video_path))
+            cfg = config or AnalyzerConfig()
+            cfg.output_dir = job_dir / "output"
 
-        roster_path: Path | None = None
-        if roster and roster.filename:
-            r_ext = Path(roster.filename).suffix.lower()
-            if r_ext in ALLOWED_ROSTER:
-                roster_path = job_dir / secure_filename(roster.filename)
-                roster.save(str(roster_path))
+            form = request.form
+            cfg.frame_sample_rate = int(form.get("frame_rate", cfg.frame_sample_rate))
+            cfg.team_home_name = form.get("team_home", cfg.team_home_name)
+            cfg.team_away_name = form.get("team_away", cfg.team_away_name)
+            cfg.watermark_text = form.get("watermark", cfg.watermark_text)
 
-        cfg = config or AnalyzerConfig()
-        cfg.output_dir = job_dir / "output"
-        cfg.html_report = True
+            JOBS[job_id] = {"status": "queued", "progress": 0, "total": 1, "result": None, "error": None}
 
-        form = request.form
-        cfg.frame_sample_rate = int(form.get("frame_rate", cfg.frame_sample_rate))
-        cfg.team_home_name = form.get("team_home", cfg.team_home_name)
-        cfg.team_away_name = form.get("team_away", cfg.team_away_name)
-        cfg.watermark_text = form.get("watermark", cfg.watermark_text)
+            thread = threading.Thread(
+                target=_run_job,
+                args=(job_id, video_path, roster_path, cfg),
+                daemon=True,
+            )
+            thread.start()
 
-        JOBS[job_id] = {"status": "queued", "progress": 0, "total": 1, "result": None, "error": None}
+            return jsonify({"job_id": job_id})
 
-        thread = threading.Thread(
-            target=_run_job,
-            args=(job_id, video_path, roster_path, cfg),
-            daemon=True,
-        )
-        thread.start()
-
-        return jsonify({"job_id": job_id})
+        except Exception as exc:
+            import traceback
+            return jsonify({"error": str(exc), "detail": traceback.format_exc()}), 500
 
     @app.route("/status/<job_id>")
     def status(job_id: str):
@@ -236,7 +249,6 @@ def _run_job(
             html_report=True,
             progress_callback=on_progress,
         )
-        # Convert Path objects to strings for JSON serialisation in templates
         result["report_path"] = str(result.get("report_path") or "")
         result["html_path"] = str(result.get("html_path") or "")
         result["zip_path"] = str(result.get("zip_path") or "")
