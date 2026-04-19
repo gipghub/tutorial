@@ -1,0 +1,28 @@
+{
+  "teams": [
+    {
+      "name": "Home Team",
+      "short_name": "HME",
+      "color_primary": "#1a3a6b",
+      "color_secondary": "#ffffff"
+    },
+    {
+      "name": "Away Team",
+      "short_name": "AWY",
+      "color_primary": "#8b0000",
+      "color_secondary": "#ffffff"
+    }
+  ],
+  "players": [
+    {"number": 1,  "name": "Player One",   "position": "PG", "age": 16, "team": "Home Team"},
+    {"number": 5,  "name": "Player Two",   "position": "SG", "age": 17, "team": "Home Team"},
+    {"number": 11, "name": "Player Three", "position": "SF", "age": 16, "team": "Home Team"},
+    {"number": 23, "name": "Player Four",  "position": "PF", "age": 18, "team": "Home Team"},
+    {"number": 44, "name": "Player Five",  "position": "C",  "age": 17, "team": "Home Team"},
+    {"number": 3,  "name": "Player Six",   "position": "PG", "age": 16, "team": "Away Team"},
+    {"number": 10, "name": "Player Seven", "position": "SG", "age": 17, "team": "Away Team"},
+    {"number": 14, "name": "Player Eight", "position": "SF", "age": 16, "team": "Away Team"},
+    {"number": 21, "name": "Player Nine",  "position": "PF", "age": 18, "team": "Away Team"},
+    {"number": 33, "name": "Player Ten",   "position": "C",  "age": 17, "team": "Away Team"}
+  ]
+}

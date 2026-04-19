@@ -1,0 +1,49 @@
+[project]
+name = "basketball-analyzer"
+version = "0.1.0"
+description = "AI-powered basketball game video analyzer using YOLOv8 and Claude"
+requires-python = ">=3.11"
+dependencies = [
+    "ultralytics>=8.3",
+    "opencv-python>=4.10",
+    "anthropic>=0.40",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "click>=8.1",
+    "pillow>=10.3",
+    "scipy>=1.13",
+    "matplotlib>=3.9",
+    "jinja2>=3.1",
+    "python-dotenv>=1.0",
+    "rich>=13.7",
+    "pydantic>=2.7",
+    "edge-tts>=6.1",
+    "ffmpeg-python>=0.2",
+    "flask>=3.0",
+    "werkzeug>=3.0",
+    "easyocr>=1.7",
+    "google-api-python-client>=2.120",
+    "google-auth-oauthlib>=1.2",
+    "qrcode[pil]>=7.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+basketball-analyzer = "basketball_analyzer.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }} — Results{% endblock %}
+{% block content %}
+{% set stats = result.stats %}
+{% set highlights = result.highlights %}
+{% set commentary = result.commentary %}
+
+<h1 class="mb-4" style="color:#e94560;">🏀 Game Analysis Results</h1>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+  {% set dur_m = (stats.duration_sec // 60) | int %}
+  {% set dur_s = (stats.duration_sec % 60) | int %}
+  <div class="col-6 col-md-3">
+    <div class="card p-3 text-center">
+      <div style="font-size:2rem;font-weight:700;color:#e94560;">{{ dur_m }}:{{ "%02d"|format(dur_s) }}</div>
+      <div class="text-secondary" style="font-size:0.85rem;">Duration</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card p-3 text-center">
+      <div style="font-size:2rem;font-weight:700;color:#e94560;">{{ stats.shot_attempts | length }}</div>
+      <div class="text-secondary" style="font-size:0.85rem;">Shot Attempts</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card p-3 text-center">
+      <div style="font-size:2rem;font-weight:700;color:#e94560;">{{ "%.1f" | format(stats.events_per_minute) }}</div>
+      <div class="text-secondary" style="font-size:0.85rem;">Events / Min</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card p-3 text-center">
+      <div style="font-size:2rem;font-weight:700;color:#e94560;">{{ highlights | length }}</div>
+      <div class="text-secondary" style="font-size:0.85rem;">Highlights</div>
+    </div>
+  </div>
+</div>
+
+<!-- Possession -->
+{% if stats.possession_by_player %}
+<h3 class="mb-3">Ball Possession</h3>
+<div class="card p-3 mb-4">
+  <table class="table table-dark table-sm mb-0">
+    <thead><tr><th>Player</th><th>Possession Time</th></tr></thead>
+    <tbody>
+    {% for label, sec in stats.possession_by_player.items() | sort(attribute='1', reverse=True) %}
+    <tr><td>{{ label }}</td><td>{{ "%.1f" | format(sec) }}s</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- Highlights -->
+{% if highlights %}
+<h3 class="mb-3">Highlight Clips</h3>
+{% for h in highlights %}
+<div class="card p-3 mb-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <strong>Highlight {{ loop.index }}</strong>
+    <span class="badge bg-danger">⚡ {{ "%.1f"|format(h.peak_excitement) }}</span>
+  </div>
+  <div class="text-secondary mb-2" style="font-size:0.85rem;">
+    {{ "%.0f"|format(h.start_sec) }}s – {{ "%.0f"|format(h.end_sec) }}s
+    &nbsp;({{ "%.0f"|format(h.end_sec - h.start_sec) }}s)
+  </div>
+  {% set clip_name = (h.narrated_clip_path or h.clip_path) %}
+  {% if clip_name %}
+  {% set fname = clip_name.split('/')[-1] %}
+  <video controls preload="metadata" style="width:100%;border-radius:6px;">
+    <source src="/highlights/{{ job_id }}/{{ fname }}" type="video/mp4">
+  </video>
+  <a class="btn btn-sm btn-outline-light mt-2" href="/highlights/{{ job_id }}/{{ fname }}" download>⬇ Download</a>
+  {% endif %}
+</div>
+{% endfor %}
+
+<a class="btn btn-outline-light mb-4" href="/download/{{ job_id }}/highlights.zip">⬇ Download All Highlights (ZIP)</a>
+{% endif %}
+
+<!-- Commentary -->
+{% if commentary and commentary.play_by_play %}
+<h3 class="mb-3">Play-by-Play</h3>
+<div class="card p-3 mb-4" style="white-space:pre-wrap;font-size:0.9rem;line-height:1.7;">{{ commentary.play_by_play }}</div>
+{% endif %}
+{% if commentary and commentary.summary %}
+<h3 class="mb-3">Game Summary</h3>
+<div class="card p-3 mb-4" style="white-space:pre-wrap;font-size:0.9rem;line-height:1.7;">{{ commentary.summary }}</div>
+{% endif %}
+
+<!-- Share Panel -->
+<h3 class="mb-3">Share</h3>
+<div class="card p-4 mb-4">
+  <div class="mb-3">
+    <label class="form-label">Share Link</label>
+    <div class="input-group">
+      <input type="text" class="form-control" id="shareUrl" value="{{ share_url }}" readonly>
+      <button class="btn btn-outline-light" onclick="navigator.clipboard.writeText(document.getElementById('shareUrl').value);this.textContent='✓ Copied'">📋 Copy</button>
+    </div>
+  </div>
+
+  <div class="mb-3 d-flex flex-wrap gap-2">
+    <a class="btn btn-success" href="https://wa.me/?text=Watch%20basketball%20highlights!%20{{ share_url | urlencode }}" target="_blank">💬 WhatsApp</a>
+    <a class="btn btn-primary" href="https://www.facebook.com/sharer/sharer.php?u={{ share_url | urlencode }}" target="_blank">Facebook</a>
+    <a class="btn btn-info" href="sms:?body=Watch%20basketball%20highlights!%20{{ share_url }}">💬 SMS</a>
+    <a class="btn btn-outline-light" href="/download/{{ job_id }}/report.json">⬇ JSON Report</a>
+  </div>
+
+  {% if not readonly %}
+  <div>
+    <label class="form-label">Email to friends & family</label>
+    <div class="input-group mb-2">
+      <input type="email" class="form-control" id="emailInput" placeholder="mom@example.com, dad@example.com">
+      <button class="btn btn-primary" onclick="sendEmail()">📧 Send</button>
+    </div>
+    <div id="emailStatus" class="text-secondary" style="font-size:0.85rem;"></div>
+  </div>
+
+  <hr class="my-3">
+  <div>
+    <label class="form-label">Upload to YouTube</label>
+    <div class="d-flex gap-2">
+      <select class="form-select" id="ytPrivacy" style="max-width:160px;">
+        <option value="unlisted">Unlisted</option>
+        <option value="public">Public</option>
+        <option value="private">Private</option>
+      </select>
+      <input type="text" class="form-control" id="ytTitle" placeholder="Game title">
+      <button class="btn btn-danger" onclick="uploadYT()">▶ Upload</button>
+    </div>
+    <div id="ytStatus" class="text-secondary mt-2" style="font-size:0.85rem;"></div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function sendEmail() {
+  const raw = document.getElementById('emailInput').value;
+  const addresses = raw.split(',').map(e => e.trim()).filter(Boolean);
+  if (!addresses.length) { alert('Enter at least one email address.'); return; }
+  document.getElementById('emailStatus').textContent = 'Sending...';
+  const resp = await fetch('/api/send-email', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ job_id: {{ job_id|tojson }}, addresses, game_title: 'Basketball Game' })
+  });
+  const data = await resp.json();
+  document.getElementById('emailStatus').textContent = data.ok ? '✅ Email sent!' : '❌ ' + data.error;
+}
+
+async function uploadYT() {
+  const privacy = document.getElementById('ytPrivacy').value;
+  const title = document.getElementById('ytTitle').value || 'Basketball Game';
+  document.getElementById('ytStatus').textContent = 'Uploading to YouTube...';
+  const resp = await fetch(`/api/upload-youtube/{{ job_id }}`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ privacy, game_title: title })
+  });
+  const data = await resp.json();
+  if (data.urls) {
+    document.getElementById('ytStatus').innerHTML =
+      '✅ Uploaded: ' + data.urls.map(u => `<a href="${u}" target="_blank">${u}</a>`).join(', ');
+  } else {
+    document.getElementById('ytStatus').textContent = '❌ ' + data.error;
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }} — Upload{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="mb-4" style="color:#e94560;">🏀 Basketball Game Analyzer</h1>
+    <p class="text-secondary mb-4">
+      Upload a video recorded by your XBOTGO Falcon camera to get AI-powered stats,
+      highlight clips with voice-over, player tracking, and sharable reports.
+    </p>
+
+    <div class="card p-4 mb-4">
+      <form id="uploadForm" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Game Video <span class="text-danger">*</span></label>
+          <input type="file" class="form-control" name="video" accept=".mp4,.mov,.avi,.mkv" required>
+          <div class="form-text text-secondary">MP4, MOV, AVI, MKV — up to 4 GB</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Roster File <span class="text-secondary">(optional)</span></label>
+          <input type="file" class="form-control" name="roster" accept=".json,.csv">
+          <div class="form-text text-secondary">JSON or CSV with player names, numbers, positions, ages, teams</div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6 mb-3 mb-md-0">
+            <label class="form-label">Home Team Name</label>
+            <input type="text" class="form-control" name="team_home" placeholder="e.g. Lakers">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Away Team Name</label>
+            <input type="text" class="form-control" name="team_away" placeholder="e.g. Celtics">
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6 mb-3 mb-md-0">
+            <label class="form-label">Video Watermark Text</label>
+            <input type="text" class="form-control" name="watermark" placeholder="e.g. © 2025 Coach Smith">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Frame Sample Rate</label>
+            <select class="form-select" name="frame_rate">
+              <option value="3">Every 3rd frame (high accuracy)</option>
+              <option value="5" selected>Every 5th frame (recommended)</option>
+              <option value="10">Every 10th frame (fast)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
+          🚀 Analyze Game
+        </button>
+        <button id="installBtn" class="btn btn-outline-light w-100 mt-2" style="display:none;">
+          📲 Install App
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = '⏳ Uploading...';
+  btn.disabled = true;
+
+  const formData = new FormData(e.target);
+  try {
+    const resp = await fetch('/upload', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.job_id) {
+      window.location.href = `/results/${data.job_id}`;
+    } else {
+      alert('Error: ' + (data.error || 'Unknown error'));
+      btn.textContent = '🚀 Analyze Game';
+      btn.disabled = false;
+    }
+  } catch (err) {
+    alert('Upload failed: ' + err.message);
+    btn.textContent = '🚀 Analyze Game';
+    btn.disabled = false;
+  }
+});
+</script>
+{% endblock %}
