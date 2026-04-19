@@ -390,7 +390,7 @@ document.getElementById(\'uploadForm\').addEventListener(\'submit\', async (e) =
       return;
     }
     if (data.job_id) {
-      window.location.href = \`/results/\${data.job_id}\`;
+      window.location.href = `/results/${data.job_id}`;
     } else {
       alert(\'Error: \' + (data.error || \'Unknown error\') + (data.detail ? \'\\n\\n\' + data.detail.slice(0, 500) : \'\'));
       btn.textContent = \'Analyze Game\';
