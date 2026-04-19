@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Run from C:\\Basketball_Analyzer to overwrite web/app.py and web/templates/index.html"""
 from pathlib import Path
 
@@ -265,11 +266,11 @@ def _run_job(
 
 index_content = '''\
 {% extends "base.html" %}
-{% block title %}{{ app_name }} — Upload{% endblock %}
+{% block title %}{{ app_name }} - Upload{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-8">
-    <h1 class="mb-4" style="color:#e94560;">🏀 Basketball Game Analyzer</h1>
+    <h1 class="mb-4" style="color:#e94560;">Basketball Game Analyzer</h1>
     <p class="text-secondary mb-4">
       Upload a video recorded by your XBOTGO Falcon camera to get AI-powered stats,
       highlight clips with voice-over, player tracking, and sharable reports.
@@ -279,12 +280,12 @@ index_content = '''\
       <ul class="nav nav-tabs mb-3" id="inputTabs">
         <li class="nav-item">
           <button class="nav-link active" id="localTab" type="button" onclick="switchTab(\'local\')">
-            📂 Use Local File Path <span class="badge bg-success ms-1">Recommended</span>
+            Use Local File Path <span class="badge bg-success ms-1">Recommended</span>
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" id="uploadTab" type="button" onclick="switchTab(\'upload\')">
-            ⬆ Upload File
+            Upload File
           </button>
         </li>
       </ul>
@@ -295,13 +296,13 @@ index_content = '''\
           <div class="mb-3">
             <label class="form-label fw-bold">Video File Path <span class="text-danger">*</span></label>
             <input type="text" class="form-control" name="local_video_path" id="localVideoPath"
-              placeholder="C:\\Videos\\game.mp4">
-            <div class="form-text text-secondary">Paste the full path to your video — no upload needed, works with large files</div>
+              placeholder="C:\\BB_Videos\\game.mp4">
+            <div class="form-text text-secondary">Paste the full path to your video - no upload needed, works with large files</div>
           </div>
           <div class="mb-3">
             <label class="form-label fw-bold">Roster File Path <span class="text-secondary">(optional)</span></label>
             <input type="text" class="form-control" name="local_roster_path"
-              placeholder="C:\\Videos\\roster.json">
+              placeholder="C:\\BB_Videos\\roster.json">
           </div>
         </div>
 
@@ -309,7 +310,7 @@ index_content = '''\
           <div class="mb-3">
             <label class="form-label fw-bold">Game Video <span class="text-danger">*</span></label>
             <input type="file" class="form-control" name="video" accept=".mp4,.mov,.avi,.mkv">
-            <div class="form-text text-secondary">MP4, MOV, AVI, MKV — may fail for large files on Windows</div>
+            <div class="form-text text-secondary">MP4, MOV, AVI, MKV - may fail for large files on Windows</div>
           </div>
           <div class="mb-3">
             <label class="form-label fw-bold">Roster File <span class="text-secondary">(optional)</span></label>
@@ -331,7 +332,7 @@ index_content = '''\
         <div class="row mb-3">
           <div class="col-md-6 mb-3 mb-md-0">
             <label class="form-label">Video Watermark Text</label>
-            <input type="text" class="form-control" name="watermark" placeholder="e.g. © 2025 Coach Smith">
+            <input type="text" class="form-control" name="watermark" placeholder="e.g. 2025 Coach Smith">
           </div>
           <div class="col-md-6">
             <label class="form-label">Frame Sample Rate</label>
@@ -344,10 +345,7 @@ index_content = '''\
         </div>
 
         <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
-          🚀 Analyze Game
-        </button>
-        <button id="installBtn" class="btn btn-outline-light w-100 mt-2" style="display:none;">
-          📲 Install App
+          Analyze Game
         </button>
       </form>
     </div>
@@ -370,7 +368,7 @@ function switchTab(tab) {
 document.getElementById(\'uploadForm\').addEventListener(\'submit\', async (e) => {
   e.preventDefault();
   const btn = document.getElementById(\'submitBtn\');
-  btn.textContent = activeTab === \'local\' ? \'⏳ Starting...\' : \'⏳ Uploading...\';
+  btn.textContent = activeTab === \'local\' ? \'Starting...\' : \'Uploading...\';
   btn.disabled = true;
 
   const formData = new FormData(e.target);
@@ -387,20 +385,20 @@ document.getElementById(\'uploadForm\').addEventListener(\'submit\', async (e) =
     } catch {
       const firstLine = text.replace(/<[^>]+>/g, \' \').replace(/\\s+/g, \' \').trim().slice(0, 300);
       alert(\'Server error:\\n\' + firstLine);
-      btn.textContent = \'🚀 Analyze Game\';
+      btn.textContent = \'Analyze Game\';
       btn.disabled = false;
       return;
     }
     if (data.job_id) {
-      window.location.href = `/results/${data.job_id}`;
+      window.location.href = \`/results/\${data.job_id}\`;
     } else {
       alert(\'Error: \' + (data.error || \'Unknown error\') + (data.detail ? \'\\n\\n\' + data.detail.slice(0, 500) : \'\'));
-      btn.textContent = \'🚀 Analyze Game\';
+      btn.textContent = \'Analyze Game\';
       btn.disabled = false;
     }
   } catch (err) {
     alert(\'Failed: \' + err.message);
-    btn.textContent = \'🚀 Analyze Game\';
+    btn.textContent = \'Analyze Game\';
     btn.disabled = false;
   }
 });
@@ -416,12 +414,12 @@ if not app_path.parent.exists():
     print("Make sure you are running this from C:\\Basketball_Analyzer")
 else:
     app_path.write_text(app_content, encoding="utf-8")
-    print(f"✓ Wrote {app_path}")
+    print(f"+ Wrote {app_path}")
 
 if not html_path.parent.exists():
     print(f"ERROR: Directory not found: {html_path.parent}")
 else:
     html_path.write_text(index_content, encoding="utf-8")
-    print(f"✓ Wrote {html_path}")
+    print(f"+ Wrote {html_path}")
 
 print("\nDone! Restart the app:  python -m basketball_analyzer --web")
