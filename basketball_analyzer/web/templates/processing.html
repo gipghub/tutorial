@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row justify-content-center text-center">
   <div class="col-md-8">
-    <h2 class="mb-3" style="color:#e94560;">⚙️ Analyzing Your Game</h2>
+    <h2 class="mb-3" style="color:#e94560;">Analyzing Your Game</h2>
     <p class="text-secondary mb-4">This may take a few minutes depending on video length.</p>
 
     <div class="card p-4 mb-4">
@@ -44,7 +44,7 @@ async function poll() {
     if (data.status === 'done') {
       window.location.href = `/results/${jobId}`;
     } else if (data.status === 'error') {
-      document.getElementById('statusText').textContent = '❌ Error: ' + (data.error || 'Unknown');
+      document.getElementById('statusText').textContent = 'Error: ' + (data.error || 'Unknown');
     } else {
       setTimeout(poll, 2000);
     }
