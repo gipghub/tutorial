@@ -22,6 +22,7 @@ console = Console()
 @click.option("--team-away", default="", help="Away team name")
 @click.option("--watermark", default="", help="Watermark text on video clips")
 @click.option("--confidence", default=0.35, type=float, help="YOLO confidence threshold")
+@click.option("--highlight-players", default="", help="Comma-separated player names -- only their shots create clips")
 @click.option("--no-highlights", is_flag=True, help="Skip highlight extraction")
 @click.option("--no-commentary", is_flag=True, help="Skip Claude API commentary")
 @click.option("--html-report", is_flag=True, help="Generate HTML report")
@@ -42,6 +43,7 @@ def main(
     team_away,
     watermark,
     confidence,
+    highlight_players,
     no_highlights,
     no_commentary,
     html_report,
@@ -52,7 +54,7 @@ def main(
     web,
     port,
 ):
-    """Basketball Game Analyzer — analyze XBOTGO Falcon camera footage."""
+    """Basketball Game Analyzer -- analyze XBOTGO Falcon camera footage."""
 
     if youtube_auth:
         from basketball_analyzer.youtube.uploader import authenticate
@@ -73,6 +75,7 @@ def main(
             team_home_name=team_home,
             team_away_name=team_away,
             watermark_text=watermark,
+            highlight_players=[p.strip() for p in highlight_players.split(",") if p.strip()],
         )
         app = create_app(cfg)
         console.print(f"[green]Starting web UI at http://localhost:{port}[/green]")
@@ -98,6 +101,7 @@ def main(
         team_home_name=team_home,
         team_away_name=team_away,
         watermark_text=watermark,
+        highlight_players=[p.strip() for p in highlight_players.split(",") if p.strip()],
     )
 
     runner = PipelineRunner(cfg)
