@@ -82,6 +82,8 @@ def create_app(config: AnalyzerConfig | None = None) -> Flask:
             cfg.team_home_name = form.get("team_home", cfg.team_home_name)
             cfg.team_away_name = form.get("team_away", cfg.team_away_name)
             cfg.watermark_text = form.get("watermark", cfg.watermark_text)
+            raw_players = form.get("highlight_players", "").strip()
+            cfg.highlight_players = [p.strip() for p in raw_players.split(",") if p.strip()]
 
             JOBS[job_id] = {"status": "queued", "progress": 0, "total": 1, "result": None, "error": None}
 
@@ -249,11 +251,10 @@ def _run_job(
             html_report=True,
             progress_callback=on_progress,
         )
-        result["report_path"] = str(result.get("report_path") or "")
-        result["html_path"] = str(result.get("html_path") or "")
-        result["zip_path"] = str(result.get("zip_path") or "")
-        JOBS[job_id]["result"] = result
         JOBS[job_id]["status"] = "done"
+        JOBS[job_id]["result"] = result
     except Exception as exc:
+        import traceback
         JOBS[job_id]["status"] = "error"
         JOBS[job_id]["error"] = str(exc)
+        JOBS[job_id]["detail"] = traceback.format_exc()
