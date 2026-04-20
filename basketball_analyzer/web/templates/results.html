@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}{{ app_name }} — Results{% endblock %}
+{% block title %}{{ app_name }} - Results{% endblock %}
 {% block content %}
 {% set stats = result.stats %}
 {% set highlights = result.highlights %}
 {% set commentary = result.commentary %}
 
-<h1 class="mb-4" style="color:#e94560;">🏀 Game Analysis Results</h1>
+<h1 class="mb-4" style="color:#e94560;">Game Analysis Results</h1>
 
 <!-- Stats Cards -->
 <div class="row g-3 mb-4">
@@ -59,24 +59,25 @@
 <div class="card p-3 mb-3">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <strong>Highlight {{ loop.index }}</strong>
-    <span class="badge bg-danger">⚡ {{ "%.1f"|format(h.peak_excitement) }}</span>
+    <span class="badge bg-danger">{{ "%.1f"|format(h.peak_excitement) }}</span>
   </div>
   <div class="text-secondary mb-2" style="font-size:0.85rem;">
-    {{ "%.0f"|format(h.start_sec) }}s – {{ "%.0f"|format(h.end_sec) }}s
+    {{ "%.0f"|format(h.start_sec) }}s - {{ "%.0f"|format(h.end_sec) }}s
     &nbsp;({{ "%.0f"|format(h.end_sec - h.start_sec) }}s)
   </div>
   {% set clip_name = (h.narrated_clip_path or h.clip_path) %}
   {% if clip_name %}
-  {% set fname = clip_name.split('/')[-1] %}
+  {% set clip_str = clip_name | string | replace('\\', '/') %}
+  {% set fname = clip_str.split('/')[-1] %}
   <video controls preload="metadata" style="width:100%;border-radius:6px;">
     <source src="/highlights/{{ job_id }}/{{ fname }}" type="video/mp4">
   </video>
-  <a class="btn btn-sm btn-outline-light mt-2" href="/highlights/{{ job_id }}/{{ fname }}" download>⬇ Download</a>
+  <a class="btn btn-sm btn-outline-light mt-2" href="/highlights/{{ job_id }}/{{ fname }}" download>Download</a>
   {% endif %}
 </div>
 {% endfor %}
 
-<a class="btn btn-outline-light mb-4" href="/download/{{ job_id }}/highlights.zip">⬇ Download All Highlights (ZIP)</a>
+<a class="btn btn-outline-light mb-4" href="/download/{{ job_id }}/highlights.zip">Download All Highlights (ZIP)</a>
 {% endif %}
 
 <!-- Commentary -->
@@ -96,23 +97,23 @@
     <label class="form-label">Share Link</label>
     <div class="input-group">
       <input type="text" class="form-control" id="shareUrl" value="{{ share_url }}" readonly>
-      <button class="btn btn-outline-light" onclick="navigator.clipboard.writeText(document.getElementById('shareUrl').value);this.textContent='✓ Copied'">📋 Copy</button>
+      <button class="btn btn-outline-light" onclick="navigator.clipboard.writeText(document.getElementById('shareUrl').value);this.textContent='Copied!'">Copy</button>
     </div>
   </div>
 
   <div class="mb-3 d-flex flex-wrap gap-2">
-    <a class="btn btn-success" href="https://wa.me/?text=Watch%20basketball%20highlights!%20{{ share_url | urlencode }}" target="_blank">💬 WhatsApp</a>
+    <a class="btn btn-success" href="https://wa.me/?text=Watch%20basketball%20highlights!%20{{ share_url | urlencode }}" target="_blank">WhatsApp</a>
     <a class="btn btn-primary" href="https://www.facebook.com/sharer/sharer.php?u={{ share_url | urlencode }}" target="_blank">Facebook</a>
-    <a class="btn btn-info" href="sms:?body=Watch%20basketball%20highlights!%20{{ share_url }}">💬 SMS</a>
-    <a class="btn btn-outline-light" href="/download/{{ job_id }}/report.json">⬇ JSON Report</a>
+    <a class="btn btn-info" href="sms:?body=Watch%20basketball%20highlights!%20{{ share_url }}">SMS</a>
+    <a class="btn btn-outline-light" href="/download/{{ job_id }}/report.json">JSON Report</a>
   </div>
 
   {% if not readonly %}
   <div>
-    <label class="form-label">Email to friends & family</label>
+    <label class="form-label">Email to friends &amp; family</label>
     <div class="input-group mb-2">
       <input type="email" class="form-control" id="emailInput" placeholder="mom@example.com, dad@example.com">
-      <button class="btn btn-primary" onclick="sendEmail()">📧 Send</button>
+      <button class="btn btn-primary" onclick="sendEmail()">Send Email</button>
     </div>
     <div id="emailStatus" class="text-secondary" style="font-size:0.85rem;"></div>
   </div>
@@ -127,7 +128,7 @@
         <option value="private">Private</option>
       </select>
       <input type="text" class="form-control" id="ytTitle" placeholder="Game title">
-      <button class="btn btn-danger" onclick="uploadYT()">▶ Upload</button>
+      <button class="btn btn-danger" onclick="uploadYT()">Upload</button>
     </div>
     <div id="ytStatus" class="text-secondary mt-2" style="font-size:0.85rem;"></div>
   </div>
@@ -147,7 +148,7 @@ async function sendEmail() {
     body: JSON.stringify({ job_id: {{ job_id|tojson }}, addresses, game_title: 'Basketball Game' })
   });
   const data = await resp.json();
-  document.getElementById('emailStatus').textContent = data.ok ? '✅ Email sent!' : '❌ ' + data.error;
+  document.getElementById('emailStatus').textContent = data.ok ? 'Email sent!' : 'Error: ' + data.error;
 }
 
 async function uploadYT() {
@@ -162,9 +163,9 @@ async function uploadYT() {
   const data = await resp.json();
   if (data.urls) {
     document.getElementById('ytStatus').innerHTML =
-      '✅ Uploaded: ' + data.urls.map(u => `<a href="${u}" target="_blank">${u}</a>`).join(', ');
+      'Uploaded: ' + data.urls.map(u => `<a href="${u}" target="_blank">${u}</a>`).join(', ');
   } else {
-    document.getElementById('ytStatus').textContent = '❌ ' + data.error;
+    document.getElementById('ytStatus').textContent = 'Error: ' + data.error;
   }
 }
 </script>
