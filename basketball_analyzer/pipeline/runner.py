@@ -79,7 +79,7 @@ class PipelineRunner:
             for frame in video.iter_frames(sample_rate=cfg.frame_sample_rate):
                 tf = tracker.process_frame(frame)
 
-                # Jersey OCR — lazy-init on first need
+                # Jersey OCR -- lazy-init on first need
                 for player in tf.players:
                     if tracker.should_run_ocr(player.track_id):
                         if jersey_ocr is None:
@@ -141,7 +141,7 @@ class PipelineRunner:
         highlight_segments: list[HighlightSegment] = []
         if extract_highlights:
             for shot in stats.shot_attempts:
-                highlight_ext.register_shot(shot.timestamp_sec)
+                highlight_ext.register_shot(shot.timestamp_sec, shot.player_label)
             segments = highlight_ext.find_segments()
             clips_dir = cfg.output_dir / cfg.highlight_clips_dir
             highlight_segments = highlight_ext.extract_clips(segments, video, clips_dir)
