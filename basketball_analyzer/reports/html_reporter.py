@@ -20,7 +20,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ app_name }} — Game Report</title>
+<title>{{ app_name }} - Game Report</title>
 <link rel="manifest" href="/static/manifest.json">
 <meta name="theme-color" content="{{ primary_color }}">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -47,7 +47,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <body>
 <nav class="navbar navbar-dark mb-4">
   <div class="container">
-    <span class="navbar-brand fw-bold">🏀 {{ app_name }}</span>
+    <span class="navbar-brand fw-bold">{{ app_name }}</span>
     {% if team_home or team_away %}
     <span class="text-white">{{ team_home }} vs {{ team_away }}</span>
     {% endif %}
@@ -98,7 +98,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <td>{{ p.name }}</td>
         <td>{{ p.team }}</td>
         <td>{{ p.position }}</td>
-        <td>{{ p.age or '–' }}</td>
+        <td>{{ p.age or '-' }}</td>
         <td>{{ possession.get(p.display_name, 0) | round(1) }}</td>
         <td>{{ shot_counts.get(p.name, 0) }}</td>
       </tr>
@@ -121,8 +121,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <div class="highlight-card">
     <div class="d-flex justify-content-between align-items-center mb-2">
       <strong>Highlight {{ loop.index }}</strong>
-      <span>{{ "%.0f" | format(h.start_sec) }}s – {{ "%.0f" | format(h.end_sec) }}s
-        &nbsp;<span class="badge badge-excitement">⚡ {{ "%.1f" | format(h.peak_excitement) }}</span>
+      <span>{{ "%.0f" | format(h.start_sec) }}s - {{ "%.0f" | format(h.end_sec) }}s
+        &nbsp;<span class="badge badge-excitement">{{ "%.1f" | format(h.peak_excitement) }}</span>
       </span>
     </div>
     {% set clip = h.narrated_clip_path or h.clip_path %}
@@ -146,8 +146,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
   <h2 class="mb-3">Share</h2>
   <div class="d-flex flex-wrap align-items-center mb-2">
-    <button class="btn btn-outline-light share-btn" onclick="navigator.clipboard.writeText(window.location.href)">📋 Copy Link</button>
-    <a class="btn btn-success share-btn" href="https://wa.me/?text={{ share_text }}">💬 WhatsApp</a>
+    <button class="btn btn-outline-light share-btn" onclick="navigator.clipboard.writeText(window.location.href)">Copy Link</button>
+    <a class="btn btn-success share-btn" href="https://wa.me/?text={{ share_text }}">WhatsApp</a>
     <a class="btn btn-primary share-btn" href="https://www.facebook.com/sharer/sharer.php?u={{ share_url }}">Facebook</a>
     <a class="btn btn-info share-btn" href="sms:?body={{ share_text }}">SMS</a>
   </div>
@@ -208,7 +208,7 @@ class HtmlReporter:
         )
 
         out_path = self.config.output_dir / "report.html"
-        out_path.write_text(html)
+        out_path.write_text(html, encoding="utf-8")
         return out_path
 
     def _render_heatmap(self, stats: GameStats) -> str:
@@ -222,8 +222,8 @@ class HtmlReporter:
             origin="upper",
         )
         ax.set_title("Player Movement Heatmap", color="white")
-        ax.set_xlabel("Court Width →", color="#8b949e")
-        ax.set_ylabel("Court Length →", color="#8b949e")
+        ax.set_xlabel("Court Width ->", color="#8b949e")
+        ax.set_ylabel("Court Length ->", color="#8b949e")
         ax.tick_params(colors="#8b949e")
         cbar = plt.colorbar(im, ax=ax)
         cbar.ax.tick_params(colors="#8b949e")
