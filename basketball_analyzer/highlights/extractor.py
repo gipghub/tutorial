@@ -35,9 +35,11 @@ class HighlightExtractor:
         self.config = config
         self._frame_scores: list[tuple[float, float]] = []  # (timestamp, score)
         self._shot_timestamps: set[float] = set()
+        self._shot_players: list[tuple[float, str]] = []  # (timestamp, player_label)
 
-    def register_shot(self, timestamp_sec: float) -> None:
+    def register_shot(self, timestamp_sec: float, player_label: str = "") -> None:
         self._shot_timestamps.add(timestamp_sec)
+        self._shot_players.append((timestamp_sec, player_label))
 
     def score_frame(self, tf: TrackFrame) -> float:
         score = 0.0
@@ -119,7 +121,22 @@ class HighlightExtractor:
                 )
             )
 
-        return self._merge_segments(segments, gap_threshold=3.0)
+        merged = self._merge_segments(segments, gap_threshold=3.0)
+
+        filter_players = self.config.highlight_players
+        if not filter_players:
+            return merged
+
+        # Keep only segments that contain a shot by one of the target players
+        targets = [p.lower() for p in filter_players]
+        filtered = []
+        for seg in merged:
+            for shot_t, label in self._shot_players:
+                if seg.start_sec <= shot_t <= seg.end_sec:
+                    if any(t in label.lower() for t in targets):
+                        filtered.append(seg)
+                        break
+        return filtered
 
     def _merge_segments(
         self, segments: list[HighlightSegment], gap_threshold: float
