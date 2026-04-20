@@ -57,3 +57,8 @@ class AnalyzerConfig:
 
     # TTS
     tts_voice: str = "en-US-GuyNeural"
+
+    # Highlight player filter — if non-empty, only clips containing a shot by one
+    # of these players (substring match, case-insensitive) will be extracted.
+    # Empty list = include all excitement events (default).
+    highlight_players: list = field(default_factory=list)
