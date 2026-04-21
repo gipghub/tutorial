@@ -106,6 +106,7 @@
     <a class="btn btn-primary" href="https://www.facebook.com/sharer/sharer.php?u={{ share_url | urlencode }}" target="_blank">Facebook</a>
     <a class="btn btn-info" href="sms:?body=Watch%20basketball%20highlights!%20{{ share_url }}">SMS</a>
     <a class="btn btn-outline-light" href="/download/{{ job_id }}/report.json">JSON Report</a>
+    <a class="btn btn-outline-warning" href="/download/{{ job_id }}/report.html">HTML Report</a>
   </div>
 
   {% if not readonly %}
