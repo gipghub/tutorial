@@ -82,6 +82,8 @@ def create_app(config: AnalyzerConfig | None = None) -> Flask:
             cfg.team_home_name = form.get("team_home", cfg.team_home_name)
             cfg.team_away_name = form.get("team_away", cfg.team_away_name)
             cfg.watermark_text = form.get("watermark", cfg.watermark_text)
+            cfg.confidence_threshold = float(form.get("confidence", cfg.confidence_threshold))
+            cfg.model_name = form.get("model", cfg.model_name)
             raw_players = form.get("highlight_players", "").strip()
             cfg.highlight_players = [p.strip() for p in raw_players.split(",") if p.strip()]
 
@@ -159,6 +161,16 @@ def create_app(config: AnalyzerConfig | None = None) -> Flask:
         if report_path and Path(report_path).exists():
             return send_file(report_path, as_attachment=True)
         return jsonify({"error": "Report not found"}), 404
+
+    @app.route("/download/<job_id>/report.html")
+    def download_html_report(job_id: str):
+        job = JOBS.get(job_id)
+        if not job or not job.get("result"):
+            return jsonify({"error": "Not found"}), 404
+        html_path = job["result"].get("html_path")
+        if html_path and Path(html_path).exists():
+            return send_file(html_path, as_attachment=False, mimetype="text/html")
+        return jsonify({"error": "HTML report not found"}), 404
 
     @app.route("/download/<job_id>/highlights.zip")
     def download_zip(job_id: str):
