@@ -114,19 +114,24 @@ def create_app(config: AnalyzerConfig | None = None) -> Flask:
 
     @app.route("/results/<job_id>")
     def results(job_id: str):
-        job = JOBS.get(job_id)
-        if not job or job["status"] != "done":
-            return render_template("processing.html", job_id=job_id,
-                                   app_name=config.app_name if config else "Basketball Analyzer")
-        result = job["result"]
-        share_url = generate_share_url(request.host.split(":")[0], job_id)
-        return render_template(
-            "results.html",
-            job_id=job_id,
-            result=result,
-            share_url=share_url,
-            app_name=config.app_name if config else "Basketball Analyzer",
-        )
+        try:
+            job = JOBS.get(job_id)
+            if not job or job["status"] != "done":
+                return render_template("processing.html", job_id=job_id,
+                                       app_name=config.app_name if config else "Basketball Analyzer")
+            result = job["result"]
+            share_url = generate_share_url(request.host.split(":")[0], job_id)
+            return render_template(
+                "results.html",
+                job_id=job_id,
+                result=result,
+                share_url=share_url,
+                app_name=config.app_name if config else "Basketball Analyzer",
+            )
+        except Exception as exc:
+            import traceback
+            tb = traceback.format_exc()
+            return f"<pre style='color:red;padding:20px'>Results page error:\n{tb}</pre>", 500
 
     @app.route("/share/<job_id>")
     def share(job_id: str):
