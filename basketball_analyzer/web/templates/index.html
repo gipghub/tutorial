@@ -86,6 +86,24 @@
           </div>
         </div>
 
+        <div class="row mb-3">
+          <div class="col-md-6 mb-3 mb-md-0">
+            <label class="form-label">Detection Confidence</label>
+            <select class="form-select" name="confidence">
+              <option value="0.15">0.15 - Most detections (try if 0 shots detected)</option>
+              <option value="0.20" selected>0.20 - Recommended for tracking cameras</option>
+              <option value="0.35">0.35 - High precision only</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">YOLO Model</label>
+            <select class="form-select" name="model">
+              <option value="yolov8n.pt" selected>yolov8n - Fast (nano)</option>
+              <option value="yolov8s.pt">yolov8s - More accurate (small, downloads ~22MB)</option>
+            </select>
+          </div>
+        </div>
+
         <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
           Analyze Game
         </button>
