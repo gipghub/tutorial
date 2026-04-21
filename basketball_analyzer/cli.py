@@ -79,7 +79,7 @@ def main(
         )
         app = create_app(cfg)
         console.print(f"[green]Starting web UI at http://localhost:{port}[/green]")
-        app.run(host="0.0.0.0", port=port, debug=False)
+        app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
         return
 
     if not video_path:
