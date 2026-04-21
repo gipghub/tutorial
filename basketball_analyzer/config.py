@@ -9,7 +9,7 @@ class AnalyzerConfig:
 
     # YOLO model
     model_name: str = "yolov8n.pt"
-    confidence_threshold: float = 0.35
+    confidence_threshold: float = 0.20
     iou_threshold: float = 0.45
     device: str = "cpu"
 
@@ -25,14 +25,16 @@ class AnalyzerConfig:
     three_point_radius: float = 0.28
 
     # Highlight detection thresholds
-    highlight_ball_speed_threshold: float = 0.15  # normalized units/sec
-    highlight_player_cluster_threshold: int = 4
-    highlight_min_duration_sec: float = 3.0
+    highlight_ball_speed_threshold: float = 0.06   # normalized units/sec (lowered for tracking cameras)
+    highlight_player_cluster_threshold: int = 3    # lowered: tracking cam often shows fewer players
+    highlight_min_duration_sec: float = 2.0
     highlight_padding_sec: float = 2.0
 
-    # Shot detection
-    shot_upward_velocity_threshold: float = -0.02  # normalized y velocity (up = negative)
-    shot_proximity_to_hoop_threshold: float = 0.20
+    # Shot detection -- tracking camera mode: hoop proximity is NOT used because the
+    # camera pans, so hoop screen coords are unpredictable.  Only upward ball velocity
+    # is required (ball moving up = shot attempt).
+    shot_upward_velocity_threshold: float = -0.01  # normalized y/sec (less strict)
+    shot_proximity_to_hoop_threshold: float = 1.0  # effectively disabled (always true)
 
     # Jersey OCR
     jersey_ocr_every_n_frames: int = 15  # run OCR every N processed frames per player
@@ -58,7 +60,7 @@ class AnalyzerConfig:
     # TTS
     tts_voice: str = "en-US-GuyNeural"
 
-    # Highlight player filter — if non-empty, only clips containing a shot by one
+    # Highlight player filter -- if non-empty, only clips containing a shot by one
     # of these players (substring match, case-insensitive) will be extracted.
     # Empty list = include all excitement events (default).
     highlight_players: list = field(default_factory=list)
