@@ -45,7 +45,7 @@ class StatsCalculator:
         self._possession_time: dict[str, float] = {}
         self._player_positions: dict[str, list[tuple[float, float]]] = {}
         self._pending_shots: list[ShotEvent] = []
-        # label resolver: track_id → label (set by pipeline runner)
+        # label resolver: track_id -> label (set by pipeline runner)
         self._labels: dict[int, str] = {}
 
     def set_label(self, track_id: int, label: str) -> None:
@@ -72,20 +72,15 @@ class StatsCalculator:
         _, ball_vy = traj.velocity
         ball_nx, ball_ny = traj.positions[-1]
 
-        hoop_l = self.config.hoop_left
-        hoop_r = self.config.hoop_right
-        dist_left = np.sqrt((ball_nx - hoop_l[0]) ** 2 + (ball_ny - hoop_l[1]) ** 2)
-        dist_right = np.sqrt((ball_nx - hoop_r[0]) ** 2 + (ball_ny - hoop_r[1]) ** 2)
-
-        toward = "left" if dist_left < dist_right else "right"
-        min_dist = min(dist_left, dist_right)
-
+        # For tracking cameras (XBOTGO Falcon etc.) hoop screen coords shift as the
+        # camera pans, so we skip proximity gating and rely solely on upward velocity.
         upward = ball_vy < self.config.shot_upward_velocity_threshold
-        near_hoop = min_dist < self.config.shot_proximity_to_hoop_threshold
 
-        if upward and near_hoop:
+        # Still compute left/right for the report, using whichever half the ball is in.
+        toward = "left" if ball_nx < 0.5 else "right"
+
+        if upward:
             self._last_shot_time = t
-            # Find closest player as shooter
             shooter_label = "Unknown"
             if tf.players:
                 bx, by = tf.ball.bbox.center
@@ -163,11 +158,8 @@ class StatsCalculator:
 
     def _build_heatmap(self, positions: list[tuple[float, float]]) -> np.ndarray:
         grid = np.zeros((self.GRID_SIZE, self.GRID_SIZE), dtype=float)
-        # positions are pixel-space; normalize via player_history (normalized already)
-        # Here positions come from accumulate which stores pixel coords — normalise later
-        # We divide by a large constant then clip; actual normalization done with frame dims
         for x, y in positions:
-            gx = min(int(x / 20), self.GRID_SIZE - 1)  # rough scale; refined in runner
+            gx = min(int(x / 20), self.GRID_SIZE - 1)
             gy = min(int(y / 20), self.GRID_SIZE - 1)
             grid[gy, gx] += 1.0
         if grid.max() > 0:
